@@ -3,9 +3,6 @@ CFLAGS= -Wall
 LDFLAGS= -lm
 CC= gcc
 
-run: main
-	./main script
-
 all: $(OBJECTS)
 	$(CC) -o main $(OBJECTS) $(LDFLAGS)
 
@@ -15,7 +12,7 @@ main.o: main.c display.h draw.h ml6.h matrix.h parser.h
 draw.o: draw.c draw.h display.h ml6.h matrix.h
 	$(CC) $(CFLAGS) -c draw.c
 
-dsiplay.o: display.c display.h ml6.h matrix.h
+display.o: display.c display.h ml6.h matrix.h
 	$(CC) $(CFLAGS) -c display.c
 
 matrix.o: matrix.c matrix.h
@@ -23,6 +20,9 @@ matrix.o: matrix.c matrix.h
 
 parser.o: parser.c parser.h matrix.h draw.h display.h ml6.h
 	$(CC) $(CFLAGS) -c parser.c
+
+run: main
+	./main script
 
 clean:
 	rm *.o *~

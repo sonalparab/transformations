@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <math.h>
 
@@ -59,6 +60,7 @@ void parse_file ( char * filename,
 
   FILE *f;
   char line[256];
+  color c;
   clear_screen(s);
 
   if ( strcmp(filename, "stdin") == 0 ) 
@@ -68,7 +70,104 @@ void parse_file ( char * filename,
   
   while ( fgets(line, 255, f) != NULL ) {
     line[strlen(line)-1]='\0';
+
     printf(":%s:\n",line);
+    
+    if(strcmp(line,"line") == 0){
+      fgets(line, 255, f);
+      line[strlen(line)-1]='\0';
+      printf(":%s:\n",line);
+      int i = 0;
+      double args[6];
+      char *nums = line;
+      while(i < 6){
+	args[i] = atof(strsep(&nums, " "));
+	i++;
+      }
+      add_edge(edges,args[0],args[1],args[2],args[3],args[4],args[5]);
+    }
+
+    else if(strcmp(line,"ident") == 0){
+      ident(transform);
+    }
+
+    else if(strcmp(line,"scale") == 0){
+      fgets(line, 255, f);
+      line[strlen(line)-1]='\0';
+      printf(":%s:\n",line);
+      int i = 0;
+      double args[3];
+      char *nums = line;
+      while(i < 3){
+	args[i] = atof(strsep(&nums, " "));
+	i++;
+      }
+      struct matrix *s = make_scale(args[0],args[1],args[2]);
+      matrix_mult(s,transform);
+    }
+
+    else if(strcmp(line,"move") == 0){
+      fgets(line, 255, f);
+      line[strlen(line)-1]='\0';
+      printf(":%s:\n",line);
+      int i = 0;
+      double args[3];
+      char *nums = line;
+      while(i < 3){
+	args[i] = atof(strsep(&nums, " "));
+	i++;
+      }
+      struct matrix *t = make_translate(args[0],args[1],args[2]);
+      matrix_mult(t,transform);
+    }
+
+    else if(strcmp(line,"rotate") == 0){
+      fgets(line, 255, f);
+      line[strlen(line)-1]='\0';
+      printf(":%s:\n",line);
+      char *nums = line;
+      char *axis = strsep(&nums, " ");
+      double theta = atof(strsep(&nums, " "));
+      theta = theta * M_PI / 180;
+
+      struct matrix *r;
+      if(strcmp(axis,"x") == 0)
+	r = make_rotX(theta);
+      else if(strcmp(axis,"y") == 0)
+	r = make_rotY(theta);
+      else if(strcmp(axis,"z") == 0)
+	r = make_rotZ(theta);
+      
+      matrix_mult(r,transform);
+    }
+
+    else if(strcmp(line,"apply") == 0){
+      matrix_mult(transform,edges);
+    }
+    
+    else if(strcmp(line,"display") == 0){
+      clear_screen(s);
+      c.red = 0;
+      c.green = 255;
+      c.blue = 255;
+      draw_lines(edges, s, c);
+      display(s);
+    }
+
+    else if(strcmp(line,"save") == 0){
+      fgets(line, 255, f);
+      line[strlen(line)-1]='\0';
+      printf(":%s:\n",line);
+      save_extension(s, line);
+    }
+
+    else if(strcmp(line,"quit") == 0){
+      exit(0);
+    }
+
+    else{
+      printf("Not a valid command\n");
+    }
   }
 }
   
